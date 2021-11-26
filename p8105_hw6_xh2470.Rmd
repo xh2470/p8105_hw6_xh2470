@@ -5,6 +5,7 @@ output: github_document
 
 ```{r set up}
 library(tidyverse)
+library(patchwork)
 library(viridis)
 library(modelr)
 library(mgcv)
@@ -119,3 +120,106 @@ birthweight_df %>%
   )
 ```
 
+# Problem 2
+
+```{r}
+weather_df = 
+  rnoaa::meteo_pull_monitors(
+    c("USW00094728"),
+    var = c("PRCP", "TMIN", "TMAX"), 
+    date_min = "2017-01-01",
+    date_max = "2017-12-31") %>%
+  mutate(
+    name = recode(id, USW00094728 = "CentralPark_NY"),
+    tmin = tmin / 10,
+    tmax = tmax / 10) %>%
+  select(name, id, everything())
+```
+
+#### Use 5000 bootstrap samples to produce estimates of quantities.
+
+```{r}
+boot_strap = 
+  weather_df %>%
+  bootstrap(n = 5000, id = "strap_number") %>% 
+  mutate(
+    models = map(.x = strap, ~lm(tmax ~ tmin, data = .x)),
+    r_square = map(models, broom::glance),
+    results = map(models, broom::tidy)
+  ) %>% 
+  select(strap_number, r_square, results) 
+
+r_square = 
+  boot_strap %>% 
+  unnest(r_square) %>% 
+  select(strap_number, r.squared)
+
+r_square
+
+intercept = 
+  boot_strap %>% 
+  unnest(results) %>%
+  select(strap_number,term, estimate) %>% 
+  mutate(
+    term = recode(term, `(Intercept)` = "beta0_hat", `tmin` = "beta1_hat")
+  ) %>% 
+  pivot_wider(
+    names_from = "term",
+    values_from = "estimate"
+  ) %>% 
+  mutate(log = log10(beta0_hat * beta1_hat))
+
+intercept
+```
+
+#### Plot the distribution of estimates.
+
+```{r}
+r_square_plot = 
+r_square %>% 
+  ggplot(aes(x = r.squared)) +
+  geom_density() + 
+  labs(
+    title = "Estimates of r square",
+    x = "r square",
+    y = "Count"
+  )
+
+intercept_plot = 
+intercept %>% 
+  ggplot(aes(x = log)) +
+  geom_density() + 
+  labs(
+    title = "Estimates of log(beta0 * beta1)",
+    x = "log(beta0 * beta1)",
+    y = "Count"
+  )  
+
+r_square_plot + intercept_plot
+
+```
+
+From the plots, we can see that the distribution of both estimates r square and log(beta0*beta1) are approximately normally distributed. The closer r square is to 1, the better the model fitting effect is. 
+
+#### Provide 95% confidence interval for the estimates.
+
+```{r}
+r_square_ci = 
+  r_square %>% 
+  summarize(
+    ci_lower = quantile(r.squared, 0.025), 
+    ci_upper = quantile(r.squared, 0.975))  
+
+r_square_ci
+
+intercept_ci = 
+  intercept %>% 
+  summarize(
+    ci_lower = quantile(log, 0.025), 
+    ci_upper = quantile(log, 0.975))  
+
+intercept_ci
+
+```
+
+The lower limit and upper limit of 95% confidence interval for r square is **`r round(pull(r_square_ci, ci_lower),digit = 3)`** and **`r round(pull(r_square_ci, ci_upper), digit = 3)`**, respectively. The lower limit and upper limit of 95% confidence interval for log(beta0 * beta1) is **`r round(pull(intercept_ci, ci_lower),digit = 3)`** and **`r round(pull(intercept_ci, ci_upper),digit = 3)`**, respectively. 
