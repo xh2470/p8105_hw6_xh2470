@@ -62,7 +62,7 @@ fit %>%
   knitr::kable(digits = 3)
 ```
 
-I want to identify whether baby's head circumference and length at birth could have an influence on baby's birth weight. Thus, I process the above linear regression model. First, I select related variables `birthweight`, `head_circ`,and `length` from the original dataset, and drop missing values. Second, I make a linear regression model by using `birthweight` as the response and `head_circ` and `length` as predictors. Third, tidy the resutls and show it in a table.
+I hypothesize that baby's head circumference and length at birth would be important factors affecting the birth weight of babies. Thus, I process the above linear regression model. First, I select related variables `birthweight`, `head_circ`,and `length` from the original dataset, and drop missing values. Second, I make a linear regression model by using `birthweight` as the response and `head_circ` and `length` as predictors. Third, tidy the resutls and show it in a table.
 
 #### Make a plot of model residuals against fitted values.
 
@@ -92,7 +92,7 @@ birthweight_df =
     test = map(test, as_tibble)) %>% 
    mutate(
     mod_1  = map(train, ~lm(birthweight ~ length + ges_age, data = .x)),
-    mod_2  = map(train, ~lm(birthweight ~ head_circ * sex + length * sex + head_circ * sex + head_circ * sex *length, data = .x)),
+    mod_2  = map(train, ~lm(birthweight ~ head_circ + sex + length + head_circ * sex + length * sex + head_circ * length + head_circ * sex *length, data = .x)),
     birthweight_lm  = map(train, ~lm(birthweight ~ head_circ + length, data = .x))
     ) %>% 
   mutate(
@@ -167,7 +167,7 @@ intercept =
     names_from = "term",
     values_from = "estimate"
   ) %>% 
-  mutate(log = log10(beta0_hat * beta1_hat))
+  mutate(log = log(beta0_hat * beta1_hat))
 
 intercept
 ```
@@ -222,4 +222,4 @@ intercept_ci
 
 ```
 
-The lower limit and upper limit of 95% confidence interval for r square is **`r round(pull(r_square_ci, ci_lower),digit = 3)`** and **`r round(pull(r_square_ci, ci_upper), digit = 3)`**, respectively. The lower limit and upper limit of 95% confidence interval for log(beta0 * beta1) is **`r round(pull(intercept_ci, ci_lower),digit = 3)`** and **`r round(pull(intercept_ci, ci_upper),digit = 3)`**, respectively. 
+The lower limit and upper limit of 95% confidence interval for r square is **`r round(pull(r_square_ci, ci_lower),digit = 3)`** and **`r round(pull(r_square_ci, ci_upper), digit = 3)`**, respectively. The lower limit and upper limit of 95% confidence interval for log(beta0 * beta1) is **`r round(pull(intercept_ci, ci_lower),digit = 2)`** and **`r round(pull(intercept_ci, ci_upper),digit = 2)`**, respectively. 
