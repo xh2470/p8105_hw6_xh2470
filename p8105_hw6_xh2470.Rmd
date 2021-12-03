@@ -70,7 +70,7 @@ I want to identify whether baby's head circumference and length at birth could h
 modelr::add_residuals(birthweight_lm, fit) %>%
   modelr::add_predictions(fit) %>% 
   ggplot(aes(x = pred, y = resid)) +
-  geom_violin() +
+  geom_point() +
   labs(
     title = "Residuals vs. Fitted Values",
     x = "Prediction",
@@ -92,7 +92,7 @@ birthweight_df =
     test = map(test, as_tibble)) %>% 
    mutate(
     mod_1  = map(train, ~lm(birthweight ~ length + ges_age, data = .x)),
-    mod_2  = map(train, ~lm(birthweight ~ head_circ * sex + length * sex, data = .x)),
+    mod_2  = map(train, ~lm(birthweight ~ head_circ * sex + length * sex + head_circ * sex + head_circ * sex *length, data = .x)),
     birthweight_lm  = map(train, ~lm(birthweight ~ head_circ + length, data = .x))
     ) %>% 
   mutate(
