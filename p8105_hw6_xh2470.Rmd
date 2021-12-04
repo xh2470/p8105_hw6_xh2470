@@ -1,5 +1,6 @@
 ---
 title: "p8105_hw6_xh2470"
+author: Xueqing Huang(xh2470)
 output: github_document
 ---
 
@@ -9,6 +10,8 @@ library(patchwork)
 library(viridis)
 library(modelr)
 library(mgcv)
+
+set.seed(1)
 
 knitr::opts_chunk$set(
   echo = TRUE,
@@ -180,8 +183,8 @@ r_square %>%
   ggplot(aes(x = r.squared)) +
   geom_density() + 
   labs(
-    title = "Estimates of r square",
-    x = "r square",
+    title = "Estimates of r^2",
+    x = "r^2",
     y = "Count"
   )
 
@@ -190,7 +193,7 @@ intercept %>%
   ggplot(aes(x = log)) +
   geom_density() + 
   labs(
-    title = "Estimates of log(beta0 * beta1)",
+    title = "Estimates of log(beta0*beta1)",
     x = "log(beta0 * beta1)",
     y = "Count"
   )  
@@ -199,7 +202,7 @@ r_square_plot + intercept_plot
 
 ```
 
-From the plots, we can see that the distribution of both estimates r square and log(beta0*beta1) are approximately normally distributed. The closer r square is to 1, the better the model fitting effect is. 
+From the plots, we can see that the distribution of both estimates r^2 and log(beta0*beta1) are approximately normally distributed. The closer r^2 is to 1, the better the model fitting effect is. 
 
 #### Provide 95% confidence interval for the estimates.
 
@@ -222,4 +225,4 @@ intercept_ci
 
 ```
 
-The lower limit and upper limit of 95% confidence interval for r square is **`r round(pull(r_square_ci, ci_lower),digit = 3)`** and **`r round(pull(r_square_ci, ci_upper), digit = 3)`**, respectively. The lower limit and upper limit of 95% confidence interval for log(beta0 * beta1) is **`r round(pull(intercept_ci, ci_lower),digit = 2)`** and **`r round(pull(intercept_ci, ci_upper),digit = 2)`**, respectively. 
+The lower limit and upper limit of 95% confidence interval for r^2 is **`r round(pull(r_square_ci, ci_lower),digit = 3)`** and **`r round(pull(r_square_ci, ci_upper), digit = 3)`**, respectively. The lower limit and upper limit of 95% confidence interval for log(beta0 * beta1) is **`r round(pull(intercept_ci, ci_lower),digit = 2)`** and **`r round(pull(intercept_ci, ci_upper),digit = 2)`**, respectively. 
